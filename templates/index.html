@@ -1,0 +1,83 @@
+{% block body %}
+
+<html>
+<head>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">    
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  <script>  
+    var perfData = {{perfData}};
+    var befData = {{data}};
+    var colors = ['red', 'green', 'blue', 'black', 'yellow', 'purple'];
+
+    if (perfData && befData) {
+      google.charts.load('current', {'packages':['corechart']});
+      google.charts.setOnLoadCallback(drawChart);
+    }
+
+    function cutFor(arr, rowsNum) {
+      arr.forEach(function(el) {
+        if (el.length > rowsNum) {
+          el.splice(rowsNum - el.length);
+        }
+      });
+      return arr;
+    }
+    
+    function addColors(arr) {
+      arr = cutFor(arr, 3);
+      arr.forEach(function(el) {
+        var style = 'point {fill-color: ' + colors[el[0]];
+        el.push(style);
+        el.splice(0, 1);
+      });
+      return arr;
+    }
+    
+    function drawChart() {
+      var dataAfter = new google.visualization.DataTable();
+      dataAfter.addColumn('number', 'Iris');
+      dataAfter.addColumn('number', 'Iris');
+      dataAfter.addColumn( {'type': 'string', 'role': 'style'} );
+      dataAfter.addRows(addColors(perfData));
+      
+      var dataBefore = new google.visualization.DataTable();
+      dataBefore.addColumn('number', 'Iris');
+      dataBefore.addColumn('number', 'Iris');
+      dataBefore.addRows(cutFor(befData, 2));   
+      
+      var piechart_options = { legend: 'left' };
+      var piechart = new google.visualization.ScatterChart(document.getElementById('chart_after'));
+      piechart.draw(dataAfter, piechart_options);
+      
+      var barchart_options = { legend: 'left' };
+      var barchart = new google.visualization.ScatterChart(document.getElementById('chart_before'));
+      barchart.draw(dataBefore, barchart_options);
+    }
+    
+  </script>
+</head>
+
+<body>
+  <div class="container">
+    <div class="row">
+      <div class="col-12">
+          <h4>Select CSV table ang components count:</h4>
+          <form method="POST" enctype="multipart/form-data" action="">
+            <input type="file" name="myfile" /> <br>
+            <input type="number" min="1" max="8"> <br>
+            <input type="submit" />
+          </form>
+      </div>
+    </div>
+    <div class="row">
+        <div id="chart_before"></div>
+        <div id="chart_after"></div>
+    </div>
+  </div>
+  
+    
+    
+  </body>
+  </html>
+  
+  {% endblock %}
