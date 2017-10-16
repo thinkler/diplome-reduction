@@ -4,7 +4,8 @@ import json
 import urllib2
 from sklearn.cluster import KMeans
 import numpy as np
-
+# FLASK_APP=app.py FLASK_DEBUG=1 python -m flask run
+# 
 from numpy import genfromtxt
 import pandas as pd
 import pdb
@@ -31,9 +32,9 @@ def index():
             row = [float(i.replace(",",".")) for i in row]
             input_data.append(row)
         
-        cluster_analysis(input_data, 3)
-
-        pdb.set_trace()
+        results = cluster_analysis(input_data, int(request.form['fcount']))
+        data = results[0]
+        perfData = results[1]
         return render_template('index.html',**locals()) 
 
 # pdb.set_trace()
