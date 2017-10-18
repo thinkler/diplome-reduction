@@ -5,15 +5,20 @@
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">    
   <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
   <script>  
+    
     var perfData = {{perfData}};
     var befData = {{data}};
     var colors = ['red', 'green', 'blue', 'black', 'yellow', 'purple'];
-
+    
     if (perfData && befData) {
       google.charts.load('current', {'packages':['corechart']});
-      google.charts.setOnLoadCallback(drawChart);
+      google.charts.setOnLoadCallback(start);
     }
-
+    
+    function copyArr(arr) {
+      return arr.map((elem) => elem.slice(0));
+    }
+    
     function cutFor(arr, rowsNum) {
       arr.forEach(function(el) {
         if (el.length > rowsNum) {
@@ -33,51 +38,139 @@
       return arr;
     }
     
-    function drawChart() {
-      var dataAfter = new google.visualization.DataTable();
-      dataAfter.addColumn('number', 'Iris');
-      dataAfter.addColumn('number', 'Iris');
-      dataAfter.addColumn( {'type': 'string', 'role': 'style'} );
-      dataAfter.addRows(addColors(perfData));
+    function linspace(a,b,n) {
+      if(typeof n === "undefined") n = Math.max(Math.round(b-a)+1,1);
+      if(n<2) { return n===1?[a]:[]; }
+      var i,ret = Array(n);
+      n--;
+      for(i=n;i>=0;i--) { ret[i] = (i*b+(n-i)*a)/n; }
+      return ret;
+    }
+    
+    function forAndrews(arr) {
+      var theta = linspace(-3.14, 3.14, 50);
+      var result = [];
+      arr.forEach(function(elem) {
+        row = [];
+        theta.forEach(function(th) {
+          var sum = 0;
+          elem.forEach(function(el, aInd) {
+            if (aInd == 0) sum += el / Math.sqrt(2);
+            if (aInd == 1) sum += el * Math.sin(th);
+            if (aInd == 2) sum += el * Math.cos(th);
+            if (aInd == 3) sum += el * Math.sin(2*th);
+            if (aInd == 4) sum += el * Math.cos(2*th); 
+            if (aInd == 5) sum += el * Math.sin(3*th);
+            if (aInd == 6) sum += el * Math.cos(3*th);
+            if (aInd == 7) sum += el * Math.sin(4*th);
+            if (aInd == 8) sum += el * Math.cos(4*th);
+            if (aInd == 9) sum += el * Math.sin(5*th);
+            if (aInd == 10) sum += el * Math.cos(5*th);
+          })
+          row.push(sum);
+        });
+        result.push(row);
+      });
       
-      var dataBefore = new google.visualization.DataTable();
-      dataBefore.addColumn('number', 'Iris');
-      dataBefore.addColumn('number', 'Iris');
-      dataBefore.addRows(cutFor(befData, 2));   
+      result.unshift(theta);
+      result = result[0].map(function(col, i) { 
+        return result.map(function(row) { 
+          return row[i] 
+        })
+      });
+      return result;
+    }
+    
+    // Chart For N-dimensional array
+    function drawAndrewss(data, id, options) {
+      var data = forAndrews(data);
+      var headers = [];
+      data[0].forEach(() => headers.push('some'));
+      data.unshift(headers)
       
-      var piechart_options = { legend: 'left' };
-      var piechart = new google.visualization.ScatterChart(document.getElementById('chart_after'));
-      piechart.draw(dataAfter, piechart_options);
+      var toPlot = google.visualization.arrayToDataTable(data);
+      var lineChart = new google.visualization.LineChart(document.getElementById(id)); 
+      lineChart.draw(toPlot, options);
+    }
+    
+    function drawAndrewsAfter(data) {
+      var options = {
+        legend: 'none',
+        series: {}
+      }
+      data.forEach((d, i) => {
+        options.series[i] = { color: colors[d[0]] };
+        d.shift();
+      })
+      drawAndrewss(data, 'andrews_after', options);
+    }
+    
+    function drawScatter(data, id) {
+      var toPlot = google.visualization.arrayToDataTable(data);
+      var scatterChart = new google.visualization.ScatterChart(document.getElementById(id));
+      scatterChart.draw(toPlot, { legend: 'none' });
+    }
+    
+    function start() {                  
+      const dataForAndrewsBefore = copyArr(befData);
+      const dataForChartBefore = copyArr(befData);
       
-      var barchart_options = { legend: 'left' };
-      var barchart = new google.visualization.ScatterChart(document.getElementById('chart_before'));
-      barchart.draw(dataBefore, barchart_options);
+      const dataForAndrewsAfter = copyArr(perfData);
+      const dataForChartAfter = copyArr(perfData);
+      
+      drawAndrewss(dataForAndrewsBefore, 'andrews_before', { legend: 'none', colors: ['blue']});
+      drawAndrewsAfter(dataForAndrewsAfter);
+      
+      cutFor(dataForChartBefore, 2).unshift(['Some', 'Some']);
+      drawScatter(dataForChartBefore, 'chart_before');
+      addColors(dataForChartAfter).unshift(['some', 'some', {'type': 'string', 'role': 'style'}]);
+      drawScatter(dataForChartAfter, 'chart_after');
     }
     
   </script>
+  <style>
+    .chart {
+      height: 500px;
+    }
+  </style>
 </head>
 
 <body>
-  <div class="container">
+  <div>
     <div class="row">
       <div class="col-12">
-          <h4>Select CSV table ang components count:</h4>
-          <form method="POST" enctype="multipart/form-data" action="">
-            <input type="file" name="myfile" /> <br>
-            <input type="number" name='fcount' min="1" max="6"> <br>
-            <input type="submit" />
-          </form>
+        <h4>Select CSV table ang components count:</h4>
+        <form method="POST" enctype="multipart/form-data" action="">
+          <input type="file" name="myfile" /> <br>
+          <input type="number" name='fcount' value="2" min="1" max="6"> <br>
+          <input type="submit" />
+        </form>
       </div>
     </div>
+    <h1>Data before</h1>
     <div class="row">
-        <div id="chart_before"></div>
-        <div id="chart_after"></div>
+      <div class="col-xl-12">
+          <div id="andrews_before" class="chart"></div>
+        </div>
+        <div class="col-xl-12">
+            <div id="chart_before" class="chart"></div>
+        </div>
     </div>
+    <h1>K-means</h1>
+    <div class="row">
+      <div class="col-xl-12">
+          <div id="andrews_after" class="chart"></div>
+      </div>
+      <div class="col-xl-12">
+        <div id="chart_after" class="chart"></div>
+      </div>
+    </div>
+    <h1>Principal Components Analysis</h1>
+    <h1>Multidimensional Scaling</h1>
+    <h1>Self-Organazing Maps</h1>
   </div>
   
-    
-    
-  </body>
-  </html>
-  
-  {% endblock %}
+</body>
+</html>
+
+{% endblock %}
