@@ -6,11 +6,12 @@
   <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
   <script>  
     
-    var perfData = {{perfData}};
+    var kmeansData = {{kmeansData}};
+    var pcaData = {{pcaData}};
     var befData = {{data}};
     var colors = ['red', 'green', 'blue', 'black', 'yellow', 'purple'];
     
-    if (perfData && befData) {
+    if (kmeansData && befData && pcaData) {
       google.charts.load('current', {'packages':['corechart']});
       google.charts.setOnLoadCallback(start);
     }
@@ -93,7 +94,7 @@
       lineChart.draw(toPlot, options);
     }
     
-    function drawAndrewsAfter(data) {
+    function drawAndrewsAfter(data, id) {
       var options = {
         legend: 'none',
         series: {}
@@ -102,7 +103,7 @@
         options.series[i] = { color: colors[d[0]] };
         d.shift();
       })
-      drawAndrewss(data, 'andrews_after', options);
+      drawAndrewss(data, id, options);
     }
     
     function drawScatter(data, id) {
@@ -112,25 +113,27 @@
     }
     
     function start() {                  
-      const dataForAndrewsBefore = copyArr(befData);
-      const dataForChartBefore = copyArr(befData);
-      
-      const dataForAndrewsAfter = copyArr(perfData);
-      const dataForChartAfter = copyArr(perfData);
-      
-      drawAndrewss(dataForAndrewsBefore, 'andrews_before', { legend: 'none', colors: ['blue']});
-      drawAndrewsAfter(dataForAndrewsAfter);
-      
-      cutFor(dataForChartBefore, 2).unshift(['Some', 'Some']);
-      drawScatter(dataForChartBefore, 'chart_before');
-      addColors(dataForChartAfter).unshift(['some', 'some', {'type': 'string', 'role': 'style'}]);
-      drawScatter(dataForChartAfter, 'chart_after');
+      drawBeforeChart(copyArr(befData));
+      drawAfterScatter(copyArr(kmeansData), 'kmeans');
+      drawAfterScatter(copyArr(pcaData), 'pca');
     }
     
+    function drawBeforeChart(data) {
+      drawAndrewss(copyArr(data), 'andrews_before', { legend: 'none', colors: ['blue']});
+      cutFor(data, 2).unshift(['Some', 'Some']);
+      drawScatter(data, 'chart_before');
+    }
+
+    function drawAfterScatter(data, id) {
+      drawAndrewsAfter(copyArr(data), id + '_andrews_after');
+      addColors(data).unshift(['some', 'some', {'type': 'string', 'role': 'style'}]);
+      drawScatter(data, id + '_scatter');
+    }
+
   </script>
   <style>
     .chart {
-      height: 500px;
+      height: 700px;
     }
   </style>
 </head>
@@ -159,13 +162,21 @@
     <h1>K-means</h1>
     <div class="row">
       <div class="col-xl-12">
-          <div id="andrews_after" class="chart"></div>
+          <div id="kmeans_andrews_after" class="chart"></div>
       </div>
       <div class="col-xl-12">
-        <div id="chart_after" class="chart"></div>
+        <div id="kmeans_scatter" class="chart"></div>
       </div>
     </div>
     <h1>Principal Components Analysis</h1>
+    <div class="row">
+      <div class="col-xl-12">
+          <div id="pca_andrews_after" class="chart"></div>
+      </div>
+      <div class="col-xl-12">
+        <div id="pca_scatter" class="chart"></div>
+      </div>
+    </div>
     <h1>Multidimensional Scaling</h1>
     <h1>Self-Organazing Maps</h1>
   </div>

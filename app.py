@@ -4,13 +4,14 @@ import json
 import urllib2
 from sklearn.cluster import KMeans
 import numpy as np
-# FLASK_APP=app.py FLASK_DEBUG=1 python -m flask run
-# 
 from numpy import genfromtxt
 import pandas as pd
 import pdb
 import csv
 import io
+import math
+from sklearn.preprocessing import StandardScaler
+
 
 tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 app = Flask(__name__, template_folder=tmpl_dir)
@@ -31,10 +32,15 @@ def index():
         for row in csv_input:
             row = [float(i.replace(",",".")) for i in row]
             input_data.append(row)
-        
-        results = cluster_analysis(input_data, int(request.form['fcount']))
-        data = results[0]
-        perfData = results[1]
+
+        factors_count = int(request.form['fcount'])
+
+        results = kmeans(input_data, factors_count)
+        pca(input_data, factors_count)
+
+        data = input_data
+        kmeansData = kmeans(input_data, factors_count)
+        pcaData = pca(input_data, factors_count)
         return render_template('index.html',**locals()) 
 
 # pdb.set_trace()
@@ -42,7 +48,7 @@ def index():
 if __name__ == "__main__":
     app.run()
 
-def cluster_analysis(array, fcount):
+def kmeans(array, fcount):
     performed_data = array
 
     kmeans = KMeans(n_clusters = fcount)
@@ -54,5 +60,34 @@ def cluster_analysis(array, fcount):
     output_data = np.c_[labels, performed_data]
     output_data = output_data[np.argsort(output_data[:,0])]
     
-    return [array, output_data.tolist()]
+    return output_data.tolist()
 
+def pca(array, fcount):
+    X = np.array(array).T
+    X_std = StandardScaler().fit_transform(X)
+    mean_vec = np.mean(X_std, axis=0)
+    cov_mat = np.cov(X_std.T)
+    eig_vals, eig_vecs = np.linalg.eig(cov_mat)
+    eig_pairs = [(np.abs(eig_vals[i]), eig_vecs[:,i]) for i in range(len(eig_vals))]
+    eig_pairs.sort(key=lambda x: x[0], reverse=True)
+    tot = sum(eig_vals)
+    var_exp = [(i / tot)*100 for i in sorted(eig_vals, reverse=True)]
+    cum_var_exp = np.cumsum(var_exp)
+
+    arr = []
+    for i in range(fcount):
+        arr.append(eig_pairs[i][1].reshape(len(eig_vals),1))
+
+    matrix_w = np.hstack(arr)
+    result = X_std.dot(matrix_w)
+
+    cluster_nums = []
+    for val in matrix_w:
+        maxVal = np.amax(val)
+        cluster_nums.append(np.nonzero(val == maxVal)[0][0])
+    
+    output = []
+    for idx, val in enumerate(cluster_nums):
+        output.append([val] + array[idx])
+
+    return output
