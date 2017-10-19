@@ -8,13 +8,15 @@
     
     var kmeansData = {{kmeansData}};
     var pcaData = {{pcaData}};
+    var somaData = {{somaData}};
+    var mdsData = {{mdsData}};
     var befData = {{data}};
     var colors = ['red', 'green', 'blue', 'black', 'yellow', 'purple'];
     
-    if (kmeansData && befData && pcaData) {
-      google.charts.load('current', {'packages':['corechart']});
-      google.charts.setOnLoadCallback(start);
-    }
+    // if (kmeansData && befData && pcaData && somaData && mdsData) {
+    google.charts.load('current', {'packages':['corechart']});
+    google.charts.setOnLoadCallback(start);
+    // }
     
     function copyArr(arr) {
       return arr.map((elem) => elem.slice(0));
@@ -114,8 +116,10 @@
     
     function start() {                  
       drawBeforeChart(copyArr(befData));
-      drawAfterScatter(copyArr(kmeansData), 'kmeans');
-      drawAfterScatter(copyArr(pcaData), 'pca');
+      if (kmeansData) drawAfterScatter(copyArr(kmeansData), 'kmeans');
+      if (pcaData) drawAfterScatter(copyArr(pcaData), 'pca');
+      if (somaData) drawAfterScatter(copyArr(somaData), 'soma');
+      if (mdsData) drawAfterScatter(copyArr(mdsData), 'mds');
     }
     
     function drawBeforeChart(data) {
@@ -123,13 +127,13 @@
       cutFor(data, 2).unshift(['Some', 'Some']);
       drawScatter(data, 'chart_before');
     }
-
+    
     function drawAfterScatter(data, id) {
       drawAndrewsAfter(copyArr(data), id + '_andrews_after');
       addColors(data).unshift(['some', 'some', {'type': 'string', 'role': 'style'}]);
       drawScatter(data, id + '_scatter');
     }
-
+    
   </script>
   <style>
     .chart {
@@ -153,16 +157,16 @@
     <h1>Data before</h1>
     <div class="row">
       <div class="col-xl-12">
-          <div id="andrews_before" class="chart"></div>
-        </div>
-        <div class="col-xl-12">
-            <div id="chart_before" class="chart"></div>
-        </div>
+        <div id="andrews_before" class="chart"></div>
+      </div>
+      <div class="col-xl-12">
+        <div id="chart_before" class="chart"></div>
+      </div>
     </div>
     <h1>K-means</h1>
     <div class="row">
       <div class="col-xl-12">
-          <div id="kmeans_andrews_after" class="chart"></div>
+        <div id="kmeans_andrews_after" class="chart"></div>
       </div>
       <div class="col-xl-12">
         <div id="kmeans_scatter" class="chart"></div>
@@ -171,14 +175,30 @@
     <h1>Principal Components Analysis</h1>
     <div class="row">
       <div class="col-xl-12">
-          <div id="pca_andrews_after" class="chart"></div>
+        <div id="pca_andrews_after" class="chart"></div>
       </div>
       <div class="col-xl-12">
         <div id="pca_scatter" class="chart"></div>
       </div>
     </div>
-    <h1>Multidimensional Scaling</h1>
     <h1>Self-Organazing Maps</h1>
+    <div class="row">
+      <div class="col-xl-12">
+        <div id="soma_andrews_after" class="chart"></div>
+      </div>
+      <div class="col-xl-12">
+        <div id="soma_scatter" class="chart"></div>
+      </div>
+    </div>
+    <h1>Multidimensional Scaling</h1>
+    <div class="row">
+      <div class="col-xl-12">
+        <div id="mds_andrews_after" class="chart"></div>
+      </div>
+      <div class="col-xl-12">
+        <div id="mds_scatter" class="chart"></div>
+      </div>
+    </div>
   </div>
   
 </body>

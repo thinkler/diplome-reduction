@@ -3,6 +3,7 @@ import os
 import json
 import urllib2
 from sklearn.cluster import KMeans
+from minisom import MiniSom
 import numpy as np
 from numpy import genfromtxt
 import pandas as pd
@@ -11,7 +12,9 @@ import csv
 import io
 import math
 from sklearn.preprocessing import StandardScaler
-
+from numpy import *
+from numpy.linalg import *
+from numpy.random import *
 
 tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 app = Flask(__name__, template_folder=tmpl_dir)
@@ -35,12 +38,11 @@ def index():
 
         factors_count = int(request.form['fcount'])
 
-        results = kmeans(input_data, factors_count)
-        pca(input_data, factors_count)
-
         data = input_data
         kmeansData = kmeans(input_data, factors_count)
         pcaData = pca(input_data, factors_count)
+        somaData = soma(input_data, factors_count)
+        mdsData = mds(input_data, factors_count)
         return render_template('index.html',**locals()) 
 
 # pdb.set_trace()
@@ -85,9 +87,73 @@ def pca(array, fcount):
     for val in matrix_w:
         maxVal = np.amax(val)
         cluster_nums.append(np.nonzero(val == maxVal)[0][0])
-    
+
     output = []
     for idx, val in enumerate(cluster_nums):
         output.append([val] + array[idx])
 
     return output
+
+def soma(array, fcount):
+    array = np.array(array)
+    size = len(array[0])
+    som = MiniSom(len(array), fcount, size, sigma=0.8, learning_rate=0.7) 
+    som.random_weights_init(array)
+    som.train_batch(array, 10)  
+    
+    results = []
+
+    for val in array.tolist():
+        results.append([som.winner(val)[1]] + val)
+
+    return results
+
+def norm(vec):
+    return sqrt(sum(vec**2))
+
+def mds(data, dimensions):
+    """
+    Multidimensional Scaling - Given a matrix of interpoint distances,
+    find a set of low dimensional points that have similar interpoint
+    distances.
+    """
+
+    data = np.array(data)
+
+    arrSize = len(data)
+    distance = zeros((arrSize,arrSize))
+
+
+
+    for (i, pointi) in enumerate(data):
+        for (j, pointj) in enumerate(data):
+            distance[i,j] = norm(pointi - pointj)
+
+    d = distance
+
+    (n,n) = d.shape
+    E = (-0.5 * d**2)
+
+    # Use mat to get column and row means to act as column and row means.
+    Er = mat(mean(E,1))
+    Es = mat(mean(E,0))
+
+        # From Principles of Multivariate Analysis: A User's Perspective (page 107).
+    F = array(E - transpose(Er) - Es + mean(E))
+
+    [U, S, V] = svd(F)
+
+    Y = U * sqrt(S)
+
+    cluster_nums = []
+    for val in Y[:,0:dimensions]:
+        maxVal = np.amax(val)
+        cluster_nums.append(np.nonzero(val == maxVal)[0][0])
+
+    output = []
+    for idx, val in enumerate(cluster_nums):
+        output.append([val] + data[idx].tolist())
+
+    return output
+
+    
