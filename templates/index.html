@@ -4,6 +4,7 @@
 <head>
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">    
   <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
   <script>  
     
     var kmeansData = {{kmeansData}};
@@ -14,194 +15,313 @@
     var colors = ['red', 'green', 'blue', 'black', 'yellow', 'purple'];
     
     // if (kmeansData && befData && pcaData && somaData && mdsData) {
-    google.charts.load('current', {'packages':['corechart']});
-    google.charts.setOnLoadCallback(start);
-    // }
-    
-    function copyArr(arr) {
-      return arr.map((elem) => elem.slice(0));
-    }
-    
-    function cutFor(arr, rowsNum) {
-      arr.forEach(function(el) {
-        if (el.length > rowsNum) {
-          el.splice(rowsNum - el.length);
-        }
-      });
-      return arr;
-    }
-    
-    function addColors(arr) {
-      arr = cutFor(arr, 3);
-      arr.forEach(function(el) {
-        var style = 'point {fill-color: ' + colors[el[0]];
-        el.push(style);
-        el.splice(0, 1);
-      });
-      return arr;
-    }
-    
-    function linspace(a,b,n) {
-      if(typeof n === "undefined") n = Math.max(Math.round(b-a)+1,1);
-      if(n<2) { return n===1?[a]:[]; }
-      var i,ret = Array(n);
-      n--;
-      for(i=n;i>=0;i--) { ret[i] = (i*b+(n-i)*a)/n; }
-      return ret;
-    }
-    
-    function forAndrews(arr) {
-      var theta = linspace(-3.14, 3.14, 50);
-      var result = [];
-      arr.forEach(function(elem) {
-        row = [];
-        theta.forEach(function(th) {
-          var sum = 0;
-          elem.forEach(function(el, aInd) {
-            if (aInd == 0) sum += el / Math.sqrt(2);
-            if (aInd == 1) sum += el * Math.sin(th);
-            if (aInd == 2) sum += el * Math.cos(th);
-            if (aInd == 3) sum += el * Math.sin(2*th);
-            if (aInd == 4) sum += el * Math.cos(2*th); 
-            if (aInd == 5) sum += el * Math.sin(3*th);
-            if (aInd == 6) sum += el * Math.cos(3*th);
-            if (aInd == 7) sum += el * Math.sin(4*th);
-            if (aInd == 8) sum += el * Math.cos(4*th);
-            if (aInd == 9) sum += el * Math.sin(5*th);
-            if (aInd == 10) sum += el * Math.cos(5*th);
-          })
-          row.push(sum);
-        });
-        result.push(row);
-      });
+      google.charts.load('current', {'packages':['corechart']});
+      google.charts.setOnLoadCallback(start);
+      // }
       
-      result.unshift(theta);
-      result = result[0].map(function(col, i) { 
-        return result.map(function(row) { 
-          return row[i] 
-        })
-      });
-      return result;
-    }
-    
-    // Chart For N-dimensional array
-    function drawAndrewss(data, id, options) {
-      var data = forAndrews(data);
-      var headers = [];
-      data[0].forEach(() => headers.push('some'));
-      data.unshift(headers)
-      
-      var toPlot = google.visualization.arrayToDataTable(data);
-      var lineChart = new google.visualization.LineChart(document.getElementById(id)); 
-      lineChart.draw(toPlot, options);
-    }
-    
-    function drawAndrewsAfter(data, id) {
-      var options = {
-        legend: 'none',
-        series: {}
+      function copyArr(arr) {
+        return arr.map((elem) => elem.slice(0));
       }
-      data.forEach((d, i) => {
-        options.series[i] = { color: colors[d[0]] };
-        d.shift();
+      
+      function cutFor(arr, rowsNum) {
+        arr.forEach(function(el) {
+          if (el.length > rowsNum) {
+            el.splice(rowsNum - el.length);
+          }
+        });
+        return arr;
+      }
+      
+      function addColors(arr) {
+        arr = cutFor(arr, 3);
+        arr.forEach(function(el) {
+          var style = 'point {fill-color: ' + colors[el[0]];
+          el.push(style);
+          el.splice(0, 1);
+        });
+        return arr;
+      }
+      
+      function linspace(a,b,n) {
+        if(typeof n === "undefined") n = Math.max(Math.round(b-a)+1,1);
+        if(n<2) { return n===1?[a]:[]; }
+        var i,ret = Array(n);
+        n--;
+        for(i=n;i>=0;i--) { ret[i] = (i*b+(n-i)*a)/n; }
+        return ret;
+      }
+      
+      function forAndrews(arr) {
+        var theta = linspace(-3.14, 3.14, 50);
+        var result = [];
+        arr.forEach(function(elem) {
+          row = [];
+          theta.forEach(function(th) {
+            var sum = 0;
+            elem.forEach(function(el, aInd) {
+              if (aInd == 0) sum += el / Math.sqrt(2);
+              if (aInd == 1) sum += el * Math.sin(th);
+              if (aInd == 2) sum += el * Math.cos(th);
+              if (aInd == 3) sum += el * Math.sin(2*th);
+              if (aInd == 4) sum += el * Math.cos(2*th); 
+              if (aInd == 5) sum += el * Math.sin(3*th);
+              if (aInd == 6) sum += el * Math.cos(3*th);
+              if (aInd == 7) sum += el * Math.sin(4*th);
+              if (aInd == 8) sum += el * Math.cos(4*th);
+              if (aInd == 9) sum += el * Math.sin(5*th);
+              if (aInd == 12) sum += el * Math.cos(5*th);
+            })
+            row.push(sum);
+          });
+          result.push(row);
+        });
+        
+        result.unshift(theta);
+        result = result[0].map(function(col, i) { 
+          return result.map(function(row) { 
+            return row[i] 
+          })
+        });
+        return result;
+      }
+      
+      // Chart For N-dimensional array
+      function drawAndrewss(data, id, options) {
+        var data = forAndrews(data);
+        var headers = [];
+        data[0].forEach(() => headers.push('some'));
+        data.unshift(headers)
+        
+        var toPlot = google.visualization.arrayToDataTable(data);
+        var lineChart = new google.visualization.LineChart(document.getElementById(id)); 
+        lineChart.draw(toPlot, options);
+      }
+      
+      function drawAndrewsAfter(data, id) {
+        var options = {
+          legend: 'none',
+          series: {}
+        }
+        data.forEach((d, i) => {
+          options.series[i] = { color: colors[d[0]] };
+          d.shift();
+        })
+        drawAndrewss(data, id, options);
+      }
+      
+      function drawScatter(data, id) {
+        var toPlot = google.visualization.arrayToDataTable(data);
+        var scatterChart = new google.visualization.ScatterChart(document.getElementById(id));
+        scatterChart.draw(toPlot, { legend: 'none' });
+      }
+      
+      function start() {                  
+        drawBeforeChart(copyArr(befData));
+        if (kmeansData) drawAfterScatter(copyArr(kmeansData), 'kmeans');
+        if (pcaData) drawAfterScatter(copyArr(pcaData), 'pca');
+        if (somaData) drawAfterScatter(copyArr(somaData), 'soma');
+        if (mdsData) drawAfterScatter(copyArr(mdsData), 'mds');
+      }
+      
+      function drawBeforeChart(data) {
+        drawAndrewss(copyArr(data), 'andrews_before', { legend: 'none', colors: ['blue']});
+        cutFor(data, 2).unshift(['Some', 'Some']);
+        drawScatter(data, 'chart_before');
+      }
+      
+      function drawAfterScatter(data, id) {
+        drawAndrewsAfter(copyArr(data), id + '_andrews_after');
+        addColors(data).unshift(['some', 'some', {'type': 'string', 'role': 'style'}]);
+        drawScatter(data, id + '_scatter');
+      }
+      
+      $(document).ready(() => {
+        $('h1.kmeans').click(() => $('.kmeans.results').toggleClass('hidden'));
+        $('h1.pca').click(() => $('.pca.results').toggleClass('hidden'));
+        $('h1.mds').click(() => $('.mds.results').toggleClass('hidden'));
+        $('h1.soma').click(() => $('.soma.results').toggleClass('hidden'));
+        $('h1.pure').click(() => $('.pure.results').toggleClass('hidden'));
+        
+        $('h3.pure').click(() => $('table.pure').toggleClass('hidden-table'));
+        $('h3.kmeans').click(() => $('table.kmeans').toggleClass('hidden-table'));
+        $('h3.pca').click(() => $('table.pca').toggleClass('hidden-table'));
+        $('h3.mds').click(() => $('table.mds').toggleClass('hidden-table'));
+        $('h3.soma').click(() => $('table.soma').toggleClass('hidden-table'));
+
+        $('h3.ch.pure').click(() => $('.charts.pure').toggleClass('hidden'));
+        $('h3.ch.kmeans').click(() => $('.charts.kmeans').toggleClass('hidden'));
+        $('h3.ch.pca').click(() => $('.charts.pca').toggleClass('hidden'));
+        $('h3.ch.mds').click(() => $('.charts.mds').toggleClass('hidden'));
+        $('h3.ch.soma').click(() => $('.charts.soma').toggleClass('hidden'));
       })
-      drawAndrewss(data, id, options);
-    }
-    
-    function drawScatter(data, id) {
-      var toPlot = google.visualization.arrayToDataTable(data);
-      var scatterChart = new google.visualization.ScatterChart(document.getElementById(id));
-      scatterChart.draw(toPlot, { legend: 'none' });
-    }
-    
-    function start() {                  
-      drawBeforeChart(copyArr(befData));
-      if (kmeansData) drawAfterScatter(copyArr(kmeansData), 'kmeans');
-      if (pcaData) drawAfterScatter(copyArr(pcaData), 'pca');
-      if (somaData) drawAfterScatter(copyArr(somaData), 'soma');
-      if (mdsData) drawAfterScatter(copyArr(mdsData), 'mds');
-    }
-    
-    function drawBeforeChart(data) {
-      drawAndrewss(copyArr(data), 'andrews_before', { legend: 'none', colors: ['blue']});
-      cutFor(data, 2).unshift(['Some', 'Some']);
-      drawScatter(data, 'chart_before');
-    }
-    
-    function drawAfterScatter(data, id) {
-      drawAndrewsAfter(copyArr(data), id + '_andrews_after');
-      addColors(data).unshift(['some', 'some', {'type': 'string', 'role': 'style'}]);
-      drawScatter(data, id + '_scatter');
-    }
-    
-  </script>
-  <style>
-    .chart {
-      height: 700px;
-    }
-  </style>
-</head>
-
-<body>
-  <div>
-    <div class="row">
-      <div class="col-12">
-        <h4>Select CSV table ang components count:</h4>
-        <form method="POST" enctype="multipart/form-data" action="">
-          <input type="file" name="myfile" /> <br>
-          <input type="number" name='fcount' value="2" min="1" max="6"> <br>
-          <input type="submit" />
-        </form>
-      </div>
-    </div>
-    <h1>Data before</h1>
-    <div class="row">
-      <div class="col-xl-12">
-        <div id="andrews_before" class="chart"></div>
-      </div>
-      <div class="col-xl-12">
-        <div id="chart_before" class="chart"></div>
-      </div>
-    </div>
-    <h1>K-means</h1>
-    <div class="row">
-      <div class="col-xl-12">
-        <div id="kmeans_andrews_after" class="chart"></div>
-      </div>
-      <div class="col-xl-12">
-        <div id="kmeans_scatter" class="chart"></div>
-      </div>
-    </div>
-    <h1>Principal Components Analysis</h1>
-    <div class="row">
-      <div class="col-xl-12">
-        <div id="pca_andrews_after" class="chart"></div>
-      </div>
-      <div class="col-xl-12">
-        <div id="pca_scatter" class="chart"></div>
-      </div>
-    </div>
-    <h1>Self-Organazing Maps</h1>
-    <div class="row">
-      <div class="col-xl-12">
-        <div id="soma_andrews_after" class="chart"></div>
-      </div>
-      <div class="col-xl-12">
-        <div id="soma_scatter" class="chart"></div>
-      </div>
-    </div>
-    <h1>Multidimensional Scaling</h1>
-    <div class="row">
-      <div class="col-xl-12">
-        <div id="mds_andrews_after" class="chart"></div>
-      </div>
-      <div class="col-xl-12">
-        <div id="mds_scatter" class="chart"></div>
-      </div>
-    </div>
-  </div>
+      
+    </script>
+    <style>
+      .chart {
+        height: 500px;
+      }
+      
+      h1,h3 {
+        cursor: pointer;
+      }
+      
+      h3:hover, h1:hover {
+        color: grey;
+      }
+      
+      .hidden {
+        visibility: hidden;
+        height: 0px;
+      }
+      
+      .hidden-table {
+        display: none;
+      }
+      
+      .color-1 { background-color: hsla(0, 100%, 50%, 0.2) }
+      .color-2 { background-color: rgba(0, 128, 0, 0.2)}
+      .color-3 { background-color: rgba(0, 0, 255, 0.2) }
+      .color-4 { background-color: rgba(0, 0, 0, 0.2) }
+      .color-5 { background-color: rgba(255, 255, 0, 0.2) }
+      .color-6 { background-color: rgba(128, 0, 128, 0.2)}
+    </style>
+  </head>
   
-</body>
-</html>
-
-{% endblock %}
+  <body>
+    <div class="container">
+      <div class="row">
+        <div class="col-12">
+          <h4>Select CSV table ang components count:</h4>
+          <form method="POST" enctype="multipart/form-data" action="">
+            <input type="file" name="myfile" /> <br>
+            <input type="number" name='fcount' value="2" min="1" max="6"> <br>
+            <input type="submit" />
+          </form>
+        </div>
+      </div>
+      
+      <h1 class="pure">Data before</h1>
+      <div class="results pure">
+        <h3 class="ch pure">Charts</h3>
+        <div class="charts pure">
+          <div class="col-12">
+            <div id="andrews_before" class="chart"></div>
+          </div>
+          <div class="col-12">
+            <div id="chart_before" class="chart"></div>
+          </div>
+        </div>
+        <div class="col-12">
+          <h3 class="res-table pure">Table</h3>
+          <table class="table table-hover hidden-table pure">
+            {% for row in pureData %}
+            <tr>
+              {% for num in row %}
+              <td class="color-{{row[0] + 1}}">{{num}}</td>
+              {% endfor %}
+            </tr>
+            {% endfor %}
+          </table>
+        </div>
+      </div>
+      
+      <h1 class="kmeans">K-means</h1>
+      <div class="results kmeans hidden">
+        <h3 class="ch kmeans">Charts</h3>
+        <div class="charts kmeans">
+          <div class="col-12">
+            <div id="kmeans_andrews_after" class="chart"></div>
+          </div>
+          <div class="col-12">
+            <div id="kmeans_scatter" class="chart"></div>
+          </div>
+        </div>
+        <div class="col-12">
+          <h3 class="res-table kmeans">Table</h3>
+          <table class="table table-hover kmeans hidden-table">
+            {% for row in kmeansData %}
+            <tr>
+              {% for num in row %}
+              <td class="color-{{row[0] + 1}}">{{num}}</td>
+              {% endfor %}
+            </tr>
+            {% endfor %}
+          </table>
+        </div>
+      </div>
+      
+      <div class="results pca hidden">
+        <h1 class="pca">Principal Components Analysis</h1>
+        <h3 class="ch pca">Charts</h3>
+        <div class="charts pca">
+          <div class="col-12">
+            <div id="pca_andrews_after" class="chart"></div>
+          </div>
+          <div class="col-12">
+            <div id="pca_scatter" class="chart"></div>
+          </div>
+        </div>
+        <h3 class="res-table pca">Table</h3>
+        <table class="table table-hover pca hidden-table">
+          {% for row in pcaData %}
+          <tr>
+            {% for num in row %}
+            <td class="color-{{row[0] + 1}}">{{num}}</td>
+            {% endfor %}
+          </tr>
+          {% endfor %}
+        </table>
+      </div>
+      
+      <h1 class="soma">Self-Organazing Maps</h1>
+      <div class="results soma hidden">
+        <h3 class="ch soma">Charts</h3>
+        <div class="charts soma">
+          <div class="col-12">
+            <div id="soma_andrews_after" class="chart"></div>
+          </div>
+          <div class="col-12">
+            <div id="soma_scatter" class="chart"></div>
+          </div>
+        </div>
+        <h3 class="res-table soma">Table</h3>
+        <table class="table table-hover soma hidden-table">
+          {% for row in somaData %}
+          <tr>
+            {% for num in row %}
+            <td class="color-{{row[0] + 1}}">{{num}}</td>
+            {% endfor %}
+          </tr>
+          {% endfor %}
+        </table>
+      </div>
+      
+      <h1 class="mds">Multidimensional Scaling</h1>
+      <div class="results mds hidden">
+        <h3 class="ch mds">Charts</h3>
+        <div class="charts mds">
+          <div class="col-12">
+            <div id="mds_andrews_after" class="chart"></div>
+          </div>
+          <div class="col-12">
+            <div id="mds_scatter" class="chart"></div>
+          </div>
+        </div>
+        <h3 class="res-table mds">Table</h3>
+        <table class="table table-hover mds hidden-table">
+          {% for row in mdsData %}
+          <tr>
+            {% for num in row %}
+            <td class="color-{{row[0] + 1}}">{{num}}</td>
+            {% endfor %}
+          </tr>
+          {% endfor %}
+        </table>
+        
+      </div>
+    </div>
+    
+  </body>
+  </html>
+  
+  {% endblock %}
